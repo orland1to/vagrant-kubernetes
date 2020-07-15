@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-python-service
+  labels: 
+    app: hello-python-label
+spec:
+  selector:
+    app: hello-python
+  ports:
+  - protocol: "TCP"
+    port: 8000
+    targetPort: 8000
+  type: LoadBalancer
+   
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-python
+spec:
+  selector:
+    matchLabels:
+      app: hello-python
+  replicas: 8
+  template:
+    metadata:
+      labels:
+        app: hello-python
+    spec:
+      containers:
+      - name: hello-python
+        image: orland0/django-test:v1 
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
