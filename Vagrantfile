@@ -14,12 +14,16 @@ Vagrant.configure(2) do |config|
     kmaster.vm.network "private_network", ip: "172.42.42.100"
     kmaster.vm.synced_folder ".", "/vagrant" 
     kmaster.vm.network "forwarded_port", guest: 80, host: 32575
-    kmaster.vm.network "forwarded_port", guest: 8000, host: 8000
-    kmaster.vm.network "forwarded_port", guest: 8001, host: 8001
+    for i in 8000..8001
+    kmaster.vm.network "forwarded_port", guest:i, host: i
+    end
+    for i in 30000..32767
+    kmaster.vm.network "forwarded_port", guest: i, host: i
+    end
     kmaster.vm.provider "virtualbox" do |v|
       v.name = "kmaster"
       v.memory = 2048
-      v.cpus = 2
+      v.cpus = 4
     end
     kmaster.vm.provision "shell", path: "bootstrap_kmaster.sh"
   end
@@ -35,7 +39,7 @@ Vagrant.configure(2) do |config|
       workernode.vm.provider "virtualbox" do |v|
         v.name = "kworker#{i}"
         v.memory = 1024
-        v.cpus = 1
+        v.cpus = 2
       end
       workernode.vm.provision "shell", path: "bootstrap_kworker.sh"
     end
