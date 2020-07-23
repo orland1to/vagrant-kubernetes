@@ -1,0 +1,44 @@
+#deployment and service for orientdb instance  with persistent volume defined from volume-claim.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: orientdb-flask-service
+  labels: 
+    app: orientdb-flask
+spec:
+  selector:
+    app: orientdb-flask
+  ports:
+  - protocol: "TCP"
+    name: flask
+    port: 5000
+    targetPort: 5000
+  type: LoadBalancer
+   
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orientdb-flask
+spec:
+  selector:
+    matchLabels:
+      app: orientdb-flask
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: orientdb-flask
+    spec:
+      containers:
+      - name: orientdb
+        image: orland0/orientdb
+        env:
+        - name: ORIENTDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: orientdb-pass
+              key: password.txt
+        ports:
+        - containerPort: 5000
+          name: port-flask
