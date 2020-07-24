@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orientdb-d2
+spec:
+  selector:
+    matchLabels:
+      app: orientdb-d
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: orientdb-d
+    spec:
+      containers:
+      - name: orientdb-d
+        image: library/orientdb:3.0.30
+        command: ["/bin/sh","-c", "cp /config/customConfig/* /orientdb/config/ ; /orientdb/bin/dserver.sh " ]
+        env:
+        - name: ORIENTDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: orientdb-pass
+              key: password.txt
+        -  name: ORIENTDB_NODE_NAME
+           value: server1
+        ports:
+        - containerPort: 2424
+          name: port-binary
+        - containerPort: 2480
+          name: port-http
+        volumeMounts:
+        - mountPath: /orientdb/databases
+          name: orientdb-data
+          subPath: databases
+        - mountPath: /orientdb/backup
+          name: orientdb-data
+          subPath: backup
+         # These containers are run during pod initialization
+      initContainers:
+      - name: install
+        image: alpine/git
+        command: ["/bin/sh","-c"]
+        args: [git clone https://github.com/orland1to/orientdbConfig.git /config/customConfig]
+        volumeMounts:
+        - name: config
+          mountPath: /config
+      volumes:
+      - name: config
+        emptyDir: {}
+      - name: orientdb-data
+        persistentVolumeClaim:
+          claimName: orientdb-pv-claim-2
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: orientdb-pv-claim-2
+spec:
+  volumeName: pv-volume-2
+  storageClassName: local-storage
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "pv-volume-2"
+spec:
+  capacity:
+    storage: "10Gi"
+  accessModes:
+    - "ReadWriteMany"
+  hostPath:
+    path: /tmp
+  persistentVolumeReclaimPolicy: Retain     
+  storageClassName: local-storage     

@@ -3,12 +3,12 @@ kind: PersistentVolume
 metadata:
   name: "pv-volume"
   labels:
-    type: local
+    type: standard
 spec:
   capacity:
     storage: "5Gi"
   accessModes:
-    - "ReadWriteOnce"
+    - "ReadWriteMany"
   hostPath:
     path: /data
-  persistentVolumeReclaimPolicy: Recycle
+  persistentVolumeReclaimPolicy: Retain

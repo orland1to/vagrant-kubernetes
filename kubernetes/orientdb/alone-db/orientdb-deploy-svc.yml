@@ -1,4 +1,7 @@
-#deployment and service for orientdb instance  with persistent volume defined from volume-claim.yml
+#deployment and service for orientdb   with persistent volume 
+#after run this you can run python-orientdb to run the flask api to interact with the db
+
+#Service definition to expose the db
 apiVersion: v1
 kind: Service
 metadata:
@@ -20,6 +23,7 @@ spec:
   type: LoadBalancer
    
 ---
+#deployment definition
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -61,4 +65,33 @@ spec:
       volumes:
       - name: orientdb-data
         persistentVolumeClaim:
-          claimName: orientdb-pv-claim
+          claimName: orientdb-pv-claim-alone
+---
+#persistent volume claims
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: orientdb-pv-claim-alone
+spec:
+  volumeName: pv-volume-alone
+  storageClassName: local-storage
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+#persistent volume in retain mode
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "pv-volume-alone"
+spec:
+  capacity:
+    storage: "10Gi"
+  accessModes:
+    - "ReadWriteMany"
+  hostPath:
+    path: /data
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage

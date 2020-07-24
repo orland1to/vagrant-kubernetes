@@ -67,7 +67,9 @@ EOF
 ls -ltr /etc/apt/sources.list.d/kubernetes.list
 
 apt-get update -y
-
+# Set external DNS
+# sed -i -e 's/#DNS=/DNS=8.8.8.8/' /etc/systemd/resolved.conf
+# service systemd-resolved restart
 # Install Kubernetes
 echo "[TASK 9] Install Kubernetes kubeadm, kubelet and kubectl"
 apt-get install -y kubelet kubeadm kubectl

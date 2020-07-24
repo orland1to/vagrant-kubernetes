@@ -1,4 +1,6 @@
 #!/bin/bash
+# Fix kubelet IP
+echo 'Environment="KUBELET_EXTRA_ARGS=--node-ip=172.42.42.100"' | sudo tee -a /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
 
 # Initialize Kubernetes
 echo "[TASK 1] Initialize Kubernetes Cluster"
@@ -19,19 +21,3 @@ su - vagrant -c "kubectl create -f https://docs.projectcalico.org/v3.9/manifests
 echo "[TASK 4] Generate and save cluster join command to /joincluster.sh"
 kubeadm token create --print-join-command > /joincluster.sh
 
-#install Knative
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.16.0/serving-crds.yaml
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.16.0/serving-core.yaml
-
-kubectl create namespace ambassador
-kubectl apply --namespace ambassador \
-  --filename https://getambassador.io/yaml/ambassador/ambassador-rbac.yaml \
-  --filename https://getambassador.io/yaml/ambassador/ambassador-service.yaml
-kubectl patch clusterrolebinding ambassador -p '{"subjects":[{"kind": "ServiceAccount", "name": "ambassador", "namespace": "ambassador"}]}'
-kubectl set env --namespace ambassador  deployments/ambassador AMBASSADOR_KNATIVE_SUPPORT=true
-kubectl patch configmap/config-network \
-  --namespace knative-serving \
-  --type merge \
-  --patch '{"data":{"ingress.class":"ambassador.ingress.networking.knative.dev"}}'
-kubectl --namespace ambassador get service ambassador
-kubectl apply --filename https://github.com/knative/serving/releases/download/v0.16.0/serving-default-domain.yaml
