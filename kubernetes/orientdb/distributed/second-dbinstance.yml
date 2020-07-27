@@ -76,5 +76,6 @@ spec:
     - "ReadWriteMany"
   hostPath:
     path: /tmp
+    type: DirectoryOrCreate
   persistentVolumeReclaimPolicy: Retain     
   storageClassName: local-storage     

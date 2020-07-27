@@ -6,8 +6,9 @@ kubectl apply --filename https://github.com/knative/serving/releases/download/v0
 echo "[TASK 6] installing lstio"
 curl -L https://istio.io/downloadIstio | sh -
  cd istio-1.6.5
- export PATH=$PWD/bin:$PATH
- istioctl install --set profile=demo
+export PATH=$PWD/bin:$PATH
+istioctl install --set profile=demo
+kubectl label namespace default istio-injection=enabled
 cat << EOF > ./istio-minimal-operator.yaml
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
@@ -49,10 +50,20 @@ spec:
 EOF
 
 istioctl manifest apply -f istio-minimal-operator.yaml
+cat <<EOF | kubectl apply -f -
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "default"
+  namespace: "knative-serving"
+spec:
+  mtls:
+    mode: PERMISSIVE
+EOF
+kubectl apply --filename https://github.com/knative/net-istio/releases/download/v0.16.0/release.yaml
+kubectl --namespace istio-system get service istio-ingressgateway
 echo "[TASK 7] installing knative serving"
 #kubectl edit cm config-domain --namespace knative-serving
-kubectl apply --filename https://github.com/knative/net-istio/releases/download/v0.15.0/release.yaml
-kubectl --namespace istio-system get service istio-ingressgateway
 kubectl apply --filename https://github.com/knative/serving/releases/download/v0.15.0/serving-default-domain.yaml
 
 #install Knative Eventing component
@@ -65,3 +76,5 @@ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manife
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.9.3/manifests/metallb.yaml
 # On first install only
 kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+##dashboard ui
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml

@@ -22,8 +22,8 @@ Vagrant.configure(2) do |config|
     end
     kmaster.vm.provider "virtualbox" do |v|
       v.name = "kmaster"
-      v.memory = 2048
-      v.cpus = 4
+      v.memory = 3048
+      v.cpus = 6
     end
     kmaster.vm.provision "shell", path: "bootstrap_kmaster.sh"
   end
@@ -38,8 +38,8 @@ Vagrant.configure(2) do |config|
       workernode.vm.network "private_network", ip: "172.42.42.10#{i}"
       workernode.vm.provider "virtualbox" do |v|
         v.name = "kworker#{i}"
-        v.memory = 1024
-        v.cpus = 2
+        v.memory = 3024
+        v.cpus = 3
       end
       workernode.vm.provision "shell", path: "bootstrap_kworker.sh"
     end

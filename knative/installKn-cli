@@ -1,0 +1,4 @@
+#!/bin/bash
+curl https://storage.googleapis.com/knative-nightly/client/latest/kn-linux-amd64 --output kn
+mv  kn /usr/local/bin/
+chmod +x /usr/local/bin/kn
